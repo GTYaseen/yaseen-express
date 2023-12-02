@@ -10,7 +10,7 @@ const users = JSON.parse(data);
 
 //welcome
 app.get("/", (req, res) => {
-  res.send("Welcome to yaseen-express\n you can do alot of things with yaseen-express\n /users \n /users/first \n /users/last \n /users/:id \n /users/:id/street \n /users/city/:city ");
+  res.send("Welcome to yaseen-express\n you can do alot of things with yaseen-express\n /users \n /users/first \n /users/last \n /users/:id \n /users/:id/street \n /users/city/:city \n update user \n delete user \n create user");
 })
 //get all users
 app.get("/users", (req, res) => {
