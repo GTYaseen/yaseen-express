@@ -8,6 +8,10 @@ app.use(express.json());
 const data = fs.readFileSync("./users.json", "utf8");
 const users = JSON.parse(data);
 
+//welcome
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+})
 //get all users
 app.get("/users", (req, res) => {
   res.send(users);
