@@ -38,6 +38,12 @@ app.get("/users/city/:city", (req, res) => {
   let usersInCity = users.filter((el) => el.address && el.address.city === city);
   res.send(usersInCity);
 });
+//get user by company
+app.get("/users/company/:company", (req, res) => {
+  let company = req.params.company;
+  let usersInCompany = users.filter((el) => el.company && el.company.name === company);
+  res.send(usersInCompany);
+})
 // get street by id
 app.get("/users/:id/street", (req, res) => {
   let id = req.params.id;
