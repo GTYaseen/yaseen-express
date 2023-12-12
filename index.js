@@ -2,48 +2,70 @@ const express = require("express");
 const app = express();
 const port = 3000;
 const fs = require("fs");
+const { Client } = require("pg");
 
 app.use(express.json());
 
-const data = fs.readFileSync("./users.json", "utf8");
-const users = JSON.parse(data);
+const client = new Client({
+  user: "postgres",
+  host: "localhost",
+  database: "yaseen",
+  password: "77565155",
+  port: "5432",
+});
+client.connect();
 
 //welcome
 app.get("/", (req, res) => {
-  res.send("Welcome to yaseen-express\n you can do alot of things with yaseen-express\n /users \n /users/first \n /users/last \n /users/:id \n /users/:id/street \n /users/city/:city \n update user \n delete user \n create user");
-})
+  res.send(
+    "Welcome to yaseen-express\n you can do alot of things with yaseen-express\n /users \n /users/first \n /users/last \n /users/:id \n /users/:id/street \n /users/city/:city \n update user \n delete user \n create user"
+  );
+});
 //get all users
 app.get("/users", (req, res) => {
-  res.send(users);
+  client.query("SELECT * FROM users", (err, users) => {
+    res.send(users.rows);
+  });
 });
 //get first user
 app.get("/users/first", (req, res) => {
-  let firstUser = users[0];
-  res.send(firstUser);
+  client.query("SELECT * FROM users ORDER BY id ASC LIMIT 1", (err, users) => {
+    res.send(users.rows);
+  });
 });
 //get last user
 app.get("/users/last", (req, res) => {
-  let lastUser = users[users.length - 1];
-  res.send(lastUser);
+  client.query("SELECT * FROM users ORDER BY id DESC LIMIT 1", (err, users) => {
+    res.send(users.rows);
+  });
 });
 //get user by id
 app.get("/users/:id", (req, res) => {
   let id = req.params.id;
-  let user = users.find((el) => el.id === parseInt(id));
-  res.send(user);
+  client.query(`SELECT * FROM users WHERE id = ${id}`, (err, users) => {
+    res.send(users.rows);
+  });
 });
 // get user by city
 app.get("/users/city/:city", (req, res) => {
   let city = req.params.city;
-  let usersInCity = users.filter((el) => el.address && el.address.city === city);
-  res.send(usersInCity);
+  client.query(
+    `SELECT * FROM users WHERE address->>'city' = '${city}'`,
+    (err, users) => {
+      res.send(users.rows);
+    }
+  );
 });
 //get user by company
 app.get("/users/company/:company", (req, res) => {
   let company = req.params.company;
-  let usersInCompany = users.filter((el) => el.company && el.company.name === company);
-  res.send(usersInCompany);
-})
+  client.query(
+    `	SELECT * FROM users WHERE company->>'name' = '${company}'`,
+    (err, users) => {
+      res.send(users.rows);
+    }
+  );
+});
 // get street by id
 app.get("/users/:id/street", (req, res) => {
   let id = req.params.id;
@@ -53,12 +75,37 @@ app.get("/users/:id/street", (req, res) => {
 // add new user
 app.post("/users", (req, res) => {
   let name = req.body.name;
-  let age = req.body.age;
-
-  let newUser = { name, age };
-  users.push(newUser);
-
-  fs.writeFileSync("./users.json", JSON.stringify(users));
+  let username=req.body.username;
+  let email = req.body.email;
+  let street = req.body.address.street;
+  let suite = req.body.address.suite;
+  let city = req.body.address.city;
+  let zipcode = req.body.address.zipcode;
+  let phone = req.body.phone;
+  let website = req.body.website;
+  let cname = req.body.company.name;
+  let ccatchPhrase = req.body.company.catchPhrase;
+  let cbs = req.body.company.bs;
+  client.query(
+    `insert into users(name,username,email,address,phone,website,company) values (
+      '${name}',
+      '${username}',
+      '${email}',
+      '{
+        "street": "${street}",
+        "suite": "${suite}",
+        "city": "${city}",
+        "zipcode": "${zipcode}",
+      }',
+      '${phone}',
+      '${website}',
+      '{
+        "name": "${cname}",
+        "catchPhrase": "${ccatchPhrase}",
+        "bs": "${cbs}",
+      }'
+    )`
+  )
   res.send({ success: true });
 });
 // update user
